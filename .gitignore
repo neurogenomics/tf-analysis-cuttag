@@ -1,0 +1,5 @@
+.DStore
+*.Rproj
+.Rproj.*/
+data/*
+!.gitignore
