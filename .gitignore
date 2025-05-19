@@ -1,5 +1,6 @@
-.DStore
+.DS_Store
 *.Rproj
 .Rproj.*/
 data/*
 !.gitignore
+.Rproj.user
