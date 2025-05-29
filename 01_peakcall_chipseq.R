@@ -33,10 +33,10 @@ metrics <- data.frame(
 )
 
 # Call peaks and record metrics
-for (bam_file in bam_files) {
+peak_call <- function(bam_file) {
     # Skip for control files
     if (is_control(bam_file)) {
-        next
+        return(NULL)
     }
     
     # Get sample name from filename
@@ -58,15 +58,34 @@ for (bam_file in bam_files) {
         control_bam_path <- file.path(read_dir, control_file)
     }
     
+    sample_path <- file.path(temp_dir, sample_name)
+    if (!dir.exists(sample_path)) {
+        dir.create(sample_path)
+    }
+    
+    
     # Call peaks
-    peak_temp <- MACSr::callpeak(
-        tfile = bam_path,
-        cfile = control_bam_path,
-        qvalue = qvalue,
-        format = "BAMPE", # Paired-end
-        name = sample_name,
-        outdir = temp_dir
+    failed <- FALSE
+    tryCatch(
+        {
+            peak_temp <<- MACSr::callpeak(
+                tfile = bam_path,
+                cfile = control_bam_path,
+                qvalue = qvalue,
+                format = "BAMPE", # Paired-end
+                name = sample_name,
+                outdir = file.path(sample_path),
+            )
+            
+        },
+        error = function(e) {
+            warning("Peak calling failed for sample: ", sample_name, "\nError: ", e)
+            failed <<- TRUE
+        }
     )
+    if (failed) {
+        return(NULL)
+    }
 
     # Capture output name
     peak_temp <- peak_temp$outputs |>
@@ -93,13 +112,19 @@ for (bam_file in bam_files) {
         frip.score = frip_score
     )
     rownames(new_row) <- sample_name
-    print(new_row)
-    metrics <- rbind(metrics, new_row)
+    cat(new_row)
+    message(new_row)
+    return(new_row)
 }
+
+results <- parallel::mclapply(bam_files[1:2], peak_call, mc.preschedule = FALSE)
+# results <- lapply(bam_files[3:4], peak_call)
+metrics <- do.call(rbind, results)
+
 
 # Save metrics to file
 metrics_out_path <- file.path(out_dir, paste0("peak_calling_qval", qvalue, "_metrics.csv"))
 write.csv(metrics, metrics_out_path, row.names = TRUE)
-paste("Metrics saved to:", metrics_out_path) |>
+paste("\nMetrics saved to:", metrics_out_path) |>
     cat()
 
