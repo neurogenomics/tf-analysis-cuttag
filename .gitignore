@@ -5,3 +5,5 @@ data/*
 !.gitignore
 .Rproj.user
 .Rhistory
+.RData
+README.html
