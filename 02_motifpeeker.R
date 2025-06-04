@@ -43,6 +43,7 @@ MotifPeeker::MotifPeeker(
     exp_labels = exp_labels,
     exp_type = exp_type,
     motif_discovery = motif_discovery,
+    motif_discovery_count = 5, # Number of motifs to discover
     download_buttons = FALSE,
     out_dir = out_dir,
     BPPARAM = BiocParallel::MulticoreParam(workers = cpu_cores),
