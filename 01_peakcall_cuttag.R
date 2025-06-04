@@ -3,7 +3,7 @@ source("utils/get_filename.R")
 source("utils/read_peak_file.R")
 
 #### Tweakable stuff ###########################################################
-read_dir <- "data/linear_dedup" # Directory containing the BAM files
+read_dir <- "data/linear_dedup_read1" # Directory containing the BAM files
 out_dir <- "data/peaks_cuttag/5-shift_q0.01"
 qvalue <- 0.01 # Q-value threshold for peak calling
 
@@ -46,11 +46,12 @@ for (bam_file in bam_files) {
     peak_temp <- MACSr::callpeak(
         tfile = bam_path,
         qvalue = qvalue,
-        format = "BAMPE", # Paired-end
+        format = "BAM", # Paired-end = BAMPE
         nomodel = TRUE,
         shift = -75,
         extsize = 150,
         keepduplicates = "all",
+        broad = FALSE, # TFs
         name = sample_name,
         outdir = temp_dir
     )
