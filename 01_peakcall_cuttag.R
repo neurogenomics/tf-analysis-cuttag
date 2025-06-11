@@ -3,10 +3,9 @@ source("utils/get_filename.R")
 source("utils/read_peak_file.R")
 
 #### Tweakable stuff ###########################################################
-read_dir <- "data/linear_dedup_read1" # Directory containing the BAM files
-out_dir <- "data/peaks_cuttag/5-shift_q0.01"
-qvalue <- 0.01 # Q-value threshold for peak calling
-
+qvalue <- 0.00001 # Q-value threshold for peak calling
+read_dir <- "data/linear_dedup" # Directory containing the BAM files
+out_dir <- paste0("data/peaks_cuttag/Paulina_q", toString(qvalue))
 
 #### Run #######################################################################
 # Make tempdir
@@ -43,13 +42,45 @@ for (bam_file in bam_files) {
     bam_path <- file.path(read_dir, bam_file)
     
     # Call peaks
+    ## Tom's method
+    ## https://github.com/neurogenomics/peak_calling_tutorial
+    # peak_temp <- MACSr::callpeak(
+    #     tfile = bam_path,
+    #     qvalue = qvalue,
+    #     format = "BAM", # Paired-end = BAMPE
+    #     nomodel = TRUE,
+    #     nolambda = TRUE,
+    #     shift = -75,
+    #     extsize = 150,
+    #     keepduplicates = "all",
+    #     broad = FALSE, # TFs
+    #     name = sample_name,
+    #     outdir = temp_dir
+    # )
+    
+    ## Aydan's method
+    # peak_temp <- MACSr::callpeak(
+    #     tfile = bam_path,
+    #     qvalue = qvalue,
+    #     format = "BAMPE", # Paired-end = BAMPE
+    #     nolambda = TRUE,
+    #     nomodel = TRUE,
+    #     shift = -75,
+    #     extsize = 150,
+    #     keepduplicates = "all",
+    #     broad = FALSE, # TFs
+    #     name = sample_name,
+    #     outdir = temp_dir
+    # )
+    
+    ## Paulina's method
+    ## https://pmc.ncbi.nlm.nih.gov/articles/PMC11950320/#Sec10
     peak_temp <- MACSr::callpeak(
         tfile = bam_path,
         qvalue = qvalue,
-        format = "BAM", # Paired-end = BAMPE
+        format = "BAMPE", # Paired-end = BAMPE
         nomodel = TRUE,
-        shift = -75,
-        extsize = 150,
+        nolambda = TRUE,
         keepduplicates = "all",
         broad = FALSE, # TFs
         name = sample_name,
